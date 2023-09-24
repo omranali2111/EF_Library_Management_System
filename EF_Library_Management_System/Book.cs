@@ -25,5 +25,7 @@ namespace EF_Library_Management_System
         public int PublicationYear { get; set; }
         public bool IsAvailable { get; set; } 
 
+        
+
     }
 }
