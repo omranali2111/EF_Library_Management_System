@@ -1,7 +1,10 @@
-﻿internal class Program
+﻿using EF_Library_Management_System;
+
+internal class Program
 {
     private static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+        Menu menu = new Menu();
+        menu.Start();
     }
 }

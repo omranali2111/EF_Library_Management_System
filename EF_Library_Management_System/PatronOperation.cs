@@ -23,26 +23,31 @@ namespace EF_Library_Management_System
                 dbContext.SaveChanges();
 
                 Console.WriteLine("Patron added successfully to the library.");
+                Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
+                Console.ReadKey();
             }
         }
-        public void RemoveBook(string title)
+
+        public void RemovePatron(int patronId)
         {
             using (var dbContext = new LibraryDBContext())
             {
-                var bookToRemove = dbContext.Books.FirstOrDefault(book => book.Title == title);
-                if (bookToRemove != null)
+                var patronToRemove = dbContext.Patrons.FirstOrDefault(patron => patron.Id == patronId);
+
+                if (patronToRemove != null)
                 {
-                    // Set the IsAvailable property of the book to false
-                    bookToRemove.IsAvailable = false;
+                    // Remove the patron from the context and save changes
+                    dbContext.Patrons.Remove(patronToRemove);
                     dbContext.SaveChanges();
-                    Console.WriteLine($"Book '{title}' has been marked as unavailable in the library.");
+                    Console.WriteLine($"Patron with ID {patronId} has been removed.");
                 }
                 else
                 {
-                    Console.WriteLine($"Book '{title}' was not found in the library.");
+                    Console.WriteLine($"Patron with ID {patronId} was not found.");
                 }
             }
         }
+
         public void UpdatePatron(int patronId, string name, string contactInformation)
         {
             using (var dbContext = new LibraryDBContext())
@@ -58,10 +63,14 @@ namespace EF_Library_Management_System
                     dbContext.SaveChanges();
 
                     Console.WriteLine($"Patron with ID {patronId} has been updated.");
+                    Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
+                    Console.ReadKey();
                 }
                 else
                 {
                     Console.WriteLine($"Patron with ID {patronId} was not found in the library.");
+                    Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
+                    Console.ReadKey();
                 }
             }
         }
@@ -77,12 +86,16 @@ namespace EF_Library_Management_System
                     Console.WriteLine("List of Patrons:");
                     foreach (var patron in patrons)
                     {
-                        Console.WriteLine($"ID: {patron.Id}, Name: {patron.Name}, Contact Information: {patron.ContactInformation}");
+                        Console.WriteLine($"ID: {patron.Id}, Name: {patron.Name}, Contact Information: {patron.ContactNumber}");
+                        Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
+                        Console.ReadKey();
                     }
                 }
                 else
                 {
                     Console.WriteLine("No patrons found in the library.");
+                    Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
+                    Console.ReadKey();
                 }
             }
         }
@@ -118,15 +131,63 @@ namespace EF_Library_Management_System
 
                         Console.WriteLine($"Patron {patron.Name} has borrowed the book '{book.Title}'.");
                         Console.WriteLine($"Please return the book by {returnDate.ToString("yyyy-MM-dd")}.");
+                        Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
+                        Console.ReadKey();
                     }
                     else
                     {
                         Console.WriteLine($"Book '{book.Title}' is not available for borrowing.");
+                        Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
+                        Console.ReadKey();
                     }
                 }
                 else
                 {
                     Console.WriteLine("Invalid patron or book ID. Please check and try again.");
+                    Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
+                    Console.ReadKey();
+                }
+            }
+        }
+        public void ReturnBook(int bookId)
+        {
+            using (var dbContext = new LibraryDBContext())
+            {
+                var borrowedBook = dbContext.BorrowingHistories
+                    .Include(bh => bh.book)
+                    .Include(bh => bh.patron)
+                    .FirstOrDefault(bh => bh.BookId == bookId && bh.ReturnDate == null);
+
+                if (borrowedBook != null)
+                {
+                    // Set the return date to the current date (book is returned)
+                    borrowedBook.ReturnDate = DateTime.Now;
+
+                    // Update the book's availability status
+                    borrowedBook.book.IsAvailable = true;
+
+                    dbContext.SaveChanges();
+
+                    Console.WriteLine($"Book '{borrowedBook.book.Title}' has been returned by Patron '{borrowedBook.patron.Name}'.");
+                    Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
+                    Console.ReadKey();
+
+                    var returnHistory = new BorrowingHistory
+                    {
+                        PatronId = borrowedBook.PatronId,
+                        BookId = borrowedBook.BookId,
+                        BorrowDate = borrowedBook.BorrowDate,
+                        ReturnDate = borrowedBook.ReturnDate
+                    };
+
+                    dbContext.BorrowingHistories.Add(returnHistory);
+                    dbContext.SaveChanges();
+                }
+                else
+                {
+                    Console.WriteLine("Book not found in the borrowing history or already returned.");
+                    Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
+                    Console.ReadKey();
                 }
             }
         }
@@ -155,10 +216,14 @@ namespace EF_Library_Management_System
                         Console.WriteLine($"Return Date: {history.ReturnDate ?? DateTime.MinValue}"); // Use DateTime.MinValue if ReturnDate is null
                         Console.WriteLine();
                     }
+                    Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
+                    Console.ReadKey();
                 }
                 else
                 {
                     Console.WriteLine($"No borrowing history found for Patron with ID {patronId}.");
+                    Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
+                    Console.ReadKey();
                 }
             }
         }
