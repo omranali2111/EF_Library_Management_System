@@ -156,7 +156,7 @@ namespace EF_Library_Management_System
                 var borrowedBook = dbContext.BorrowingHistories
                     .Include(bh => bh.book)
                     .Include(bh => bh.patron)
-                    .FirstOrDefault(bh => bh.BookId == bookId && bh.ReturnDate == null);
+                    .FirstOrDefault(bh => bh.BookId == bookId);
 
                 if (borrowedBook != null)
                 {
@@ -171,17 +171,6 @@ namespace EF_Library_Management_System
                     Console.WriteLine($"Book '{borrowedBook.book.Title}' has been returned by Patron '{borrowedBook.patron.Name}'.");
                     Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++");
                     Console.ReadKey();
-
-                    var returnHistory = new BorrowingHistory
-                    {
-                        PatronId = borrowedBook.PatronId,
-                        BookId = borrowedBook.BookId,
-                        BorrowDate = borrowedBook.BorrowDate,
-                        ReturnDate = borrowedBook.ReturnDate
-                    };
-
-                    dbContext.BorrowingHistories.Add(returnHistory);
-                    dbContext.SaveChanges();
                 }
                 else
                 {
